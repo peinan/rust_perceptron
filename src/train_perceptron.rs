@@ -2,7 +2,7 @@
 /// Author:     Peinan ZHANG
 /// Created at: 2017-05-12
 
-use std::io::{BufReader, Lines};
+use std::io::{BufReader, BufWriter, Lines};
 use std::io::prelude::*;
 use std::fs::File;
 use std::error::Error;
@@ -12,7 +12,7 @@ use std::collections::HashMap;
 static N_EPOCH: u32 = 10;
 
 /// Load inputs to lines
-fn load_data(path: String) -> Lines<BufReader<File>> {
+fn load_data(path: &str) -> Lines<BufReader<File>> {
     let file = match File::open(&path) {
         Err(why) => panic!("Couldn't open {}: {}", &path, Error::description(&why)),
         Ok(file) => file,
@@ -21,6 +21,21 @@ fn load_data(path: String) -> Lines<BufReader<File>> {
     let reader = BufReader::new(file);
 
     return reader.lines();
+}
+
+
+/// Write model to file
+fn dump_model(model: &HashMap<String, i32>, path: &str) {
+    let file = match File::create(&path) {
+        Err(why) => panic!("Couldn't create {}: {}", &path, Error::description(&why)),
+        Ok(file) => file,
+    };
+
+    let mut writer = BufWriter::new(file);
+
+    for (word, weight) in model.iter() {
+        write!(&mut writer, "{}\t{}\n", word, weight.to_string());
+    }
 }
 
 
@@ -64,28 +79,34 @@ fn sign(x: f64) -> i8 {
 fn main() {
     let mut word_model: HashMap<String, i32> = HashMap::new();
     let in_fp = "data/titles-en-train.small.labeled";
+    let out_fp = "model/titles-en-train.small.model";
 
-    for line in load_data(in_fp.to_string()) {
-        let (y, x) = parse_line(line.unwrap());
-        let y_pred = predict_one(&x, &word_model);
-        if y_pred != y {
-            match y_pred {
-                1 => {
-                    for (word, _) in x.iter() {
-                        *word_model.entry(word.to_string()).or_insert(0) += -1;
+    for epoch in 0..N_EPOCH {
+        println!("epoch: {} / {}", epoch, N_EPOCH);
+        for line in load_data(in_fp) {
+            let (y, x) = parse_line(line.unwrap());
+            let y_pred = predict_one(&x, &word_model);
+            if y_pred != y {
+                match y_pred {
+                    1 => {
+                        for (word, _) in x.iter() {
+                            *word_model.entry(word.to_string()).or_insert(0) += -1;
+                        }
                     }
-                }
-                -1 => {
-                    for (word, _) in x.iter() {
-                        *word_model.entry(word.to_string()).or_insert(0) += 1;
+                    -1 => {
+                        for (word, _) in x.iter() {
+                            *word_model.entry(word.to_string()).or_insert(0) += 1;
+                        }
                     }
+                    _ => {}
                 }
-                _ => {}
             }
         }
     }
 
-    for (k, v) in word_model.iter() {
-        println!("{}: {}", k, v);
-    }
+    dump_model(&word_model, out_fp);
+
+    // for (k, v) in word_model.iter() {
+    //     println!("{}: {}", k, v);
+    // }
 }
