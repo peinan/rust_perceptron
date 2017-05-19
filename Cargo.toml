@@ -1,6 +1,6 @@
 [package]
 name = "rust_perceptron"
 version = "0.1.0"
-authors = ["Peinan ZHANG <pzhang@yahoo-corp.jp>"]
+authors = ["Peinan ZHANG <peinan7@gmail.com>"]
 
 [dependencies]
