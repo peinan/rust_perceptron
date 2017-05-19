@@ -78,24 +78,12 @@ fn main() {
             match y_pred {
                 1 => {
                     for (word, _) in x.iter() {
-                        // println!("{}", word);
-                        // let weight = word_model.entry(word).or_insert(0);
-                        // *weight += -1;
-                        word_model[word] = match x.contains_key(word) {
-                            true => word_model[word] + -1,
-                            false => 0,
-                        }
+                        *word_model.entry(word.to_string()).or_insert(0) += -1;
                     }
                 }
                 -1 => {
                     for (word, _) in x.iter() {
-                        println!("{}", word);
-                        // let weight = word_model.entry(word).or_insert(0);
-                        // *weight += 1;
-                        word_model[word] = match x.contains_key(word) {
-                            true => word_model[word] + 1,
-                            false => 0,
-                        }
+                        *word_model.entry(word.to_string()).or_insert(0) += 1;
                     }
                 }
                 _ => {}
