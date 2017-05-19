@@ -31,11 +31,7 @@ fn parse_line(line: String) -> (i8, HashMap<String, u8>) {
     let y: i8 = splits[0].to_string().parse().unwrap();
     let words: Vec<&str> = splits[1].split(' ').collect();
     for word in words {
-        if !x_wordcount.contains_key(word) {
-            x_wordcount.insert(word.to_string(), 1);
-        } else {
-            *x_wordcount.get_mut(word).unwrap() += 1;
-        }
+        *x_wordcount.entry(word.to_string()).or_insert(1) += 1;
     }
 
     (y, x_wordcount)
@@ -58,12 +54,10 @@ fn predict_one(x: &HashMap<String, u8>, w: &HashMap<String, i32>) -> i8 {
 
 
 fn sign(x: f64) -> i8 {
-    let mut f_x = 1;
-    if x < 0. {
-        f_x = -1;
+    match x < 0. {
+        true => -1,
+        false => 1,
     }
-
-    f_x
 }
 
 
